@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>法务知识库</title>
+<style>
+:root{
+  --brand:#8800F3;
+  --brand-dark:#6E00C4;
+  --brand-soft:#F6EDFF;
+  --bg:#F7F7F9;
+  --panel:#FFFFFF;
+  --line:#E6E6EC;
+  --line-soft:#F0F0F4;
+  --text:#1A1A1F;
+  --text-2:#5A5A66;
+  --text-3:#90909E;
+  --danger:#C2410C;
+  --ok:#047857;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(20,20,40,.05),0 6px 20px rgba(20,20,40,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+.hidden{display:none !important}
+
+/* ---------- 设置页 ---------- */
+.setup-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.setup-card{width:100%;max-width:520px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:32px}
+.brand-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.logo{width:38px;height:38px;border-radius:9px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;letter-spacing:.5px}
+.setup-card h1{font-size:20px;font-weight:650;letter-spacing:-.2px}
+.setup-sub{color:var(--text-2);font-size:13px;margin-bottom:22px}
+.steps{background:#FAFAFC;border:1px solid var(--line-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px}
+.steps ol{padding-left:18px;color:var(--text-2);font-size:12.5px;line-height:1.9}
+.steps b{color:var(--text);font-weight:600}
+.steps code{background:#EFEFF4;padding:1px 5px;border-radius:4px;font-size:11.5px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.field .hint{font-weight:400;color:var(--text-3);font-size:11.5px}
+.field input,.field textarea,.field select{
+  width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;outline:none;transition:border-color .12s,box-shadow .12s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(136,0,243,.1)}
+.field textarea{resize:vertical;min-height:96px;line-height:1.6}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:8px;font-weight:600;font-size:13.5px;transition:background .12s,opacity .12s}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
+.btn-ghost:hover{background:#FAFAFC}
+.btn-danger{background:#fff;border:1px solid #F0CFC2;color:var(--danger)}
+.btn-danger:hover{background:#FEF4F0}
+.btn-sm{padding:6px 11px;font-size:12.5px;border-radius:7px}
+.setup-note{margin-top:16px;font-size:11.5px;color:var(--text-3);line-height:1.7}
+.setup-note a{color:var(--brand);text-decoration:none}
+.err{color:var(--danger);font-size:12.5px;margin-top:10px;min-height:18px}
+
+/* ---------- 主界面 ---------- */
+.app{max-width:1080px;margin:0 auto;padding:0 20px 80px}
+header.top{position:sticky;top:0;z-index:30;background:rgba(247,247,249,.9);backdrop-filter:blur(8px);padding:16px 0 12px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.top-row{display:flex;align-items:center;gap:12px}
+.top-row .logo{width:30px;height:30px;font-size:12px;border-radius:8px}
+.app-title{font-size:16.5px;font-weight:650;letter-spacing:-.2px}
+.app-count{font-size:12px;color:var(--text-3)}
+.spacer{flex:1}
+
+/* 工具栏 */
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.search-box{position:relative;flex:1;min-width:220px}
+.search-box input{width:100%;padding:8px 32px 8px 32px;border:1px solid var(--line);border-radius:8px;background:#fff;outline:none}
+.search-box input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(136,0,243,.1)}
+.search-box .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none}
+.search-box .clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:16px;line-height:1;padding:2px 4px;border-radius:4px}
+.search-box .clear:hover{background:#EFEFF4;color:var(--text)}
+.seg{display:flex;background:#EFEFF4;border-radius:8px;padding:2px;gap:2px;flex-wrap:wrap}
+.seg button{padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.seg button .n{color:var(--text-3);font-weight:500;font-size:11.5px;margin-left:3px}
+select.sort{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;outline:none;font-size:12.5px}
+.tgl{display:inline-flex;align-items:center;gap:5px;padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:var(--text-2)}
+.tgl:hover{background:#FAFAFC}
+.tgl.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+
+/* 标签栏 */
+.tagbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.tagbar .lbl{font-size:11.5px;color:var(--text-3);margin-right:2px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;background:#EFEFF4;font-size:11.5px;color:var(--text-2);white-space:nowrap}
+.chip:hover{background:#E6E6EE;color:var(--text)}
+.chip.on{background:var(--brand);color:#fff}
+.chip.on:hover{background:var(--brand-dark);color:#fff}
+
+/* 卡片列表 */
+.list{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;transition:border-color .12s,box-shadow .12s}
+.card:hover{border-color:#D8D8E2;box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
+.badge{flex-shrink:0;margin-top:2px;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.2px}
+.card-title{flex:1;font-size:14.5px;font-weight:640;line-height:1.45;cursor:pointer;letter-spacing:-.1px}
+.card-title:hover{color:var(--brand)}
+.card-meta{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.icon-btn{width:27px;height:27px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-3)}
+.icon-btn:hover{background:#F2F2F6;color:var(--text)}
+.icon-btn.active{color:#EAA100}
+.card-body{
+  font-size:13px;color:var(--text-2);white-space:pre-wrap;word-break:break-word;
+  max-height:5.2em;overflow:hidden;line-height:1.65;
+}
+.card-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.card-foot .tags{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.mini{font-size:11.5px;color:var(--text-3);display:inline-flex;align-items:center;gap:3px}
+.mini .dot{color:#D0D0DA}
+.card-actions{display:flex;gap:4px;flex-shrink:0}
+
+/* 空状态 */
+.empty{text-align:center;padding:64px 20px;color:var(--text-3)}
+.empty h3{font-size:15px;color:var(--text-2);font-weight:600;margin-bottom:6px}
+.empty p{font-size:13px;margin-bottom:18px}
+
+/* 弹窗 */
+.backdrop{position:fixed;inset:0;background:rgba(20,20,35,.42);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.modal{background:var(--panel);border-radius:14px;width:100%;max-width:720px;box-shadow:0 20px 60px rgba(20,20,50,.24);overflow:hidden}
+.modal-head{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal-head h2{font-size:15.5px;font-weight:650;flex:1}
+.modal-body{padding:18px 20px;max-height:calc(100vh - 220px);overflow-y:auto}
+.modal-foot{display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--line);background:#FAFAFC}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+
+/* 详情 */
+.detail-title{font-size:19px;font-weight:660;line-height:1.4;margin-bottom:10px;letter-spacing:-.2px}
+.detail-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line-soft);margin-bottom:16px}
+.sec{margin-bottom:16px}
+.sec-h{font-size:11.5px;font-weight:700;color:var(--text-3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px}
+.sec-c{font-size:13.5px;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.7}
+.sec-c.risk{color:var(--danger);background:#FEF6F2;border-left:3px solid #F0A57E;padding:9px 12px;border-radius:0 6px 6px 0}
+.sec-c.why{background:#FAFAFC;border-left:3px solid #D6D6E0;padding:9px 12px;border-radius:0 6px 6px 0}
+.sec-c.body{background:#FCFCFE;border:1px solid var(--line-soft);padding:12px 14px;border-radius:8px}
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap}
+
+/* toast */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(12px);background:#1E1E26;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 帮助 */
+.help-sec{margin-bottom:20px}
+.help-sec h3{font-size:13.5px;font-weight:650;margin-bottom:8px;color:var(--text)}
+.help-sec p,.help-sec li{font-size:12.8px;color:var(--text-2);line-height:1.8}
+.help-sec ul{padding-left:18px}
+.help-sec kbd{background:#EFEFF4;border:1px solid #DEDEE6;border-bottom-width:2px;border-radius:4px;padding:1px 6px;font-size:11.5px;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--text)}
+.warn{background:#FFF9EC;border:1px solid #F3E0B0;border-radius:8px;padding:11px 13px;font-size:12.5px;color:#7A5B12;line-height:1.7}
+
+/* 导出框 */
+.export-box{background:#FCFCFE;border:1px solid var(--line-soft);border-radius:8px;padding:11px 13px;font-size:12px;color:var(--text-2);max-height:200px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace}
+</style>
+</head>
+<body>
+
+<!-- ============ 设置页 ============ -->
+<div id="setupScreen" class="setup-wrap">
+  <div class="setup-card">
+    <div class="brand-row">
+      <div class="logo">T</div>
+      <div>
+        <h1>法务知识库</h1>
+      </div>
+    </div>
+    <p class="setup-sub">合同条款 · 支付业务 · 诉讼要点 · 模板清单，随时记录，随时取用。</p>
+
+    <div class="steps">
+      <ol>
+        <li>在 Supabase 控制台 <b>SQL Editor</b> 执行项目里的 <code>setup.sql</code>（只需一次）</li>
+        <li>点项目右上角的 <b>Connect</b> 按钮，复制 <b>Project URL</b> 和 <b>Publishable key</b>；老界面在左下角齿轮 <b>Project Settings → API</b>，取 <b>Project URL</b> 和 <b>anon public</b></li>
+        <li>粘贴到下面，点连接</li>
+      </ol>
+    </div>
+
+    <form id="setupForm">
+      <div class="field">
+        <label>Supabase Project URL</label>
+        <input id="cfgUrl" type="url" placeholder="https://xxxxxxxx.supabase.co" autocomplete="off" spellcheck="false" required>
+      </div>
+      <div class="field">
+        <label>客户端密钥 <span class="hint">（新版以 sb_publishable_ 开头，老版以 eyJ 开头，两种都能用）</span></label>
+        <textarea id="cfgKey" placeholder="sb_publishable_... 或 eyJhbGciOiJIUzI1NiIs..." spellcheck="false" required style="min-height:80px"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" id="btnConnect" style="width:100%">连接并进入</button>
+      <div class="err" id="setupErr"></div>
+    </form>
+
+    <p class="setup-note">
+      连接信息只保存在你这台设备的浏览器里，不会上传到别处。换设备重新填一次即可，数据都在 Supabase 里。
+    </p>
+  </div>
+</div>
+
+<!-- ============ 主界面 ============ -->
+<div id="appScreen" class="app hidden">
+  <header class="top">
+    <div class="top-row">
+      <div class="logo">T</div>
+      <div>
+        <div class="app-title">法务知识库</div>
+      </div>
+      <div class="app-count" id="countText"></div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="btnHelp">帮助</button>
+      <button class="btn btn-ghost btn-sm" id="btnData">数据</button>
+      <button class="btn btn-primary btn-sm" id="btnNew">+ 新建</button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="搜索标题、正文、出处、标签…（Ctrl+K）" autocomplete="off">
+      <button class="clear hidden" id="clearSearch">&times;</button>
+    </div>
+    <div class="seg" id="catSeg"></div>
+    <button class="tgl" id="favTgl">收藏</button>
+    <select class="sort" id="sortSel">
+      <option value="updated">最近更新</option>
+      <option value="created">最近创建</option>
+      <option value="use">最常使用</option>
+      <option value="title">按标题</option>
+    </select>
+  </div>
+
+  <div class="tagbar" id="tagBar"></div>
+  <div class="list" id="list"></div>
+</div>
+
+<!-- ============ 详情弹窗 ============ -->
+<div class="backdrop hidden" id="viewModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="badge" id="vBadge"></span>
+      <h2 id="vTitle"></h2>
+      <button class="icon-btn" data-close="viewModal" title="关闭">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="vBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-sm" id="vCopy">复制正文</button>
+      <button class="btn btn-ghost btn-sm" id="vEdit">编辑</button>
+      <div class="spacer"></div>
+      <button class="btn btn-danger btn-sm" id="vDel">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 编辑弹窗 ============ -->
+<div class="backdrop hidden" id="editModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="eHead">新建条目</h2>
+      <button class="icon-btn" data-close="editModal" title="关闭">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="field">
+          <label>分类</label>
+          <select id="eCategory"></select>
+        </div>
+        <div class="field">
+          <label>适用法域 <span class="hint">选填，如 尼日利亚 / 英国法</span></label>
+          <input id="eJurisdiction" list="jurList" placeholder="留空表示通用" autocomplete="off">
+          <datalist id="jurList"></datalist>
+        </div>
+      </div>
+      <div class="field">
+        <label>标题 <span class="hint">一句话说清这是什么，将来靠它认出来</span></label>
+        <input id="eTitle" placeholder="如：责任限额条款 — 以 12 个月服务费为上限" autocomplete="off">
+      </div>
+      <div class="field">
+        <label id="eBodyLabel">正文</label>
+        <textarea id="eBody" style="min-height:180px" placeholder=""></textarea>
+      </div>
+      <div class="field">
+        <label id="eWhyLabel">适用场景</label>
+        <textarea id="eWhy" style="min-height:76px" placeholder=""></textarea>
+      </div>
+      <div class="field">
+        <label>风险提示 <span class="hint">选填：坑在哪、谈判底线、对方会怎么砍</span></label>
+        <textarea id="eRisk" style="min-height:64px" placeholder=""></textarea>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>出处 <span class="hint">选填</span></label>
+          <input id="eSource" placeholder="如：XX 供应协议 v3 / 2026-03 谈判" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>标签 <span class="hint">逗号分隔，可多选补全</span></label>
+          <input id="eTags" list="tagList" placeholder="如：责任限制, SaaS, 供应商" autocomplete="off">
+          <datalist id="tagList"></datalist>
+        </div>
+      </div>
+      <div class="err" id="eErr"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-sm" id="eSave">保存</button>
+      <button class="btn btn-ghost btn-sm" data-close="editModal">取消</button>
+      <div class="spacer"></div>
+      <label class="tgl" style="cursor:pointer"><input type="checkbox" id="eFav" style="width:auto;margin:0"> 收藏</label>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 数据弹窗 ============ -->
+<div class="backdrop hidden" id="dataModal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head">
+      <h2>数据管理</h2>
+      <button class="icon-btn" data-close="dataModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="help-sec">
+        <h3>备份</h3>
+        <p>建议定期导出一份 JSON，存到网盘或本地。换电脑时用「导入」恢复。</p>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" id="btnExportJson">导出 JSON 备份</button>
+          <button class="btn btn-ghost btn-sm" id="btnExportMd">导出 Markdown</button>
+          <button class="btn btn-ghost btn-sm" id="btnCopyMd">复制为 Markdown</button>
+        </div>
+      </div>
+      <div class="help-sec">
+        <h3>导入</h3>
+        <p>选择本系统导出的 JSON 文件，条目会追加到现有数据后面（不会覆盖）。</p>
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
+          <input type="file" id="importFile" accept="application/json,.json" style="font-size:12px">
+          <button class="btn btn-ghost btn-sm" id="btnImport">开始导入</button>
+        </div>
+        <div class="err" id="importErr"></div>
+      </div>
+      <div class="help-sec">
+        <h3>连接</h3>
+        <p id="connInfo"></p>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-ghost btn-sm" id="btnReconfig">重新配置连接</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 帮助弹窗 ============ -->
+<div class="backdrop hidden" id="helpModal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head">
+      <h2>使用说明</h2>
+      <button class="icon-btn" data-close="helpModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="help-sec">
+        <h3>怎么用最省事</h3>
+        <ul>
+          <li>看到好条款、学到新知识，随手 <b>Ctrl+N</b> 新建一条，30 秒存进去</li>
+          <li>要用的时候搜关键词，找到后点 <b>复制正文</b> 直接粘进合同</li>
+          <li>每次复制会自动给这条 +1 计数，用得多的排「最常使用」就在最上面</li>
+          <li>真正好用的记得收藏，赶时间时只看收藏夹</li>
+        </ul>
+      </div>
+      <div class="help-sec">
+        <h3>快捷键</h3>
+        <ul>
+          <li><kbd>Ctrl</kbd>+<kbd>K</kbd> 聚焦搜索框</li>
+          <li><kbd>Ctrl</kbd>+<kbd>N</kbd> 新建条目</li>
+          <li><kbd>Esc</kbd> 关闭弹窗 / 清空搜索</li>
+        </ul>
+      </div>
+      <div class="help-sec">
+        <h3>四个分类怎么用</h3>
+        <ul>
+          <li><b>合同条款库</b>：好条款原文 + 什么时候用 + 风险在哪</li>
+          <li><b>支付业务知识</b>：通道、结算、牌照、费率、资金链路、合规要求</li>
+          <li><b>诉讼与争议要点</b>：判例要点、管辖与仲裁选择、各国时效、证据要求</li>
+          <li><b>模板与清单</b>：审阅 checklist、谈判要点、流程备忘</li>
+        </ul>
+      </div>
+      <div class="help-sec">
+        <div class="warn">
+          <b>安全提醒：</b>这个页面靠 Supabase 的 anon key 直连数据库，任何人拿到「页面地址 + 你的浏览器配置」都能读写。
+          所以：不要把页面链接发给别人、不要在公用电脑上配置、也不要存高度敏感的内容。
+          需要更严的权限控制时告诉我，可以加登录。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const { createClient } = window.supabase || {};
+
+/* ============ 常量 ============ */
+const LS_URL = 'kb.supabase.url';
+const LS_KEY = 'kb.supabase.key';
+
+const CATS = {
+  contract: {
+    label:'合同条款库', short:'条款', color:'#8800F3', bg:'#F3E8FF',
+    bodyLabel:'条款原文', bodyPh:'粘贴这条写得好的条款原文…',
+    whyLabel:'适用场景 / 为什么这么写', whyPh:'什么情况下用这条；它比常规写法好在哪',
+  },
+  payment: {
+    label:'支付业务知识', short:'支付', color:'#0B63C5', bg:'#DBEAFE',
+    bodyLabel:'知识内容', bodyPh:'如：某通道的结算周期、费率结构、牌照要求、资金链路…',
+    whyLabel:'适用背景', whyPh:'什么业务场景下用得上这块知识',
+  },
+  litigation: {
+    label:'诉讼与争议要点', short:'诉讼', color:'#C2410C', bg:'#FFEDD5',
+    bodyLabel:'要点内容', bodyPh:'判例要点、管辖/仲裁选择、诉讼时效、证据要求…',
+    whyLabel:'适用场景', whyPh:'什么争议类型下会参考这条',
+  },
+  template: {
+    label:'模板与清单', short:'清单', color:'#047857', bg:'#D1FAE5',
+    bodyLabel:'清单 / 模板内容', bodyPh:'一行一条，勾选式清单或可复用模板…',
+    whyLabel:'使用说明', whyPh:'什么时候拿出来过一遍',
+  },
+};
+const CAT_KEYS = Object.keys(CATS);
+
+/* ============ 状态 ============ */
+const state = {
+  sb: null,
+  entries: [],
+  counts: {},
+  allTags: [],
+  allJurisdictions: [],
+  query: '',
+  category: 'all',
+  tag: null,
+  favOnly: false,
+  sort: 'updated',
+  current: null,
+  editingId: null,
+};
+
+/* ============ 工具 ============ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso = d => (d ? new Date(d).toISOString().slice(0,10) : '');
+
+let toastTimer;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1900);
+}
+function debounce(fn, ms){
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+function openModal(id){ $(id).classList.remove('hidden'); }
+function closeModal(id){ $(id).classList.add('hidden'); }
+
+/* ============ 连接 ============ */
+// 防呆：secret / service_role 密钥权限过大，误粘时拦下来
+function keyLooksPrivileged(key){
+  if(key.startsWith('sb_secret_')) return true;
+  if(key.startsWith('eyJ')){
+    try{
+      const b64 = key.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(decodeURIComponent(escape(atob(b64)))).role === 'service_role';
+    }catch{ return false; }
+  }
+  return false;
+}
+
+function buildClient(url, key){
+  if(typeof createClient !== 'function'){
+    throw new Error('数据库组件没加载出来，检查网络后刷新页面重试');
+  }
+  state.sb = createClient(url.trim().replace(/\/$/,''), key.trim());
+}
+
+async function testConnection(){
+  const { error } = await state.sb.rpc('kb_search', { q:null, p_category:null, p_tag:null, p_fav:false, p_sort:'updated' });
+  return error;
+}
+
+/* ============ 数据 ============ */
+async function refresh(){
+  if(!state.sb) return;
+  const { data, error } = await state.sb.rpc('kb_search', {
+    q: state.query || null,
+    p_category: state.category,
+    p_tag: state.tag,
+    p_fav: state.favOnly,
+    p_sort: state.sort,
+  });
+  if(error){ toast('读取失败：' + error.message); return; }
+  state.entries = data || [];
+
+  // 全量取一次用于统计与标签补全
+  const { data: all } = await state.sb.from('kb_entries').select('category,tags,jurisdiction,is_favorite');
+  const rows = all || [];
+  state.counts = { all: rows.length };
+  CAT_KEYS.forEach(k => state.counts[k] = 0);
+  const tagSet = new Set(), jurSet = new Set();
+  rows.forEach(r => {
+    state.counts[r.category] = (state.counts[r.category] || 0) + 1;
+    (r.tags || []).forEach(t => tagSet.add(t));
+    if(r.jurisdiction) jurSet.add(r.jurisdiction);
+  });
+  state.allTags = [...tagSet].sort((a,b) => a.localeCompare(b,'zh'));
+  state.allJurisdictions = [...jurSet].sort((a,b) => a.localeCompare(b,'zh'));
+
+  render();
+}
+
+async function bumpUse(id){
+  await state.sb.rpc('kb_bump_use', { p_id: id });
+  const hit = state.entries.find(e => e.id === id);
+  if(hit) hit.use_count = (hit.use_count || 0) + 1;
+}
+
+async function toggleFav(e){
+  const { error } = await state.sb.from('kb_entries')
+    .update({ is_favorite: !e.is_favorite })
+    .eq('id', e.id);
+  if(error){ toast('操作失败：' + error.message); return; }
+  toast(e.is_favorite ? '已取消收藏' : '已收藏');
+  await refresh();
+}
+
+async function removeEntry(e){
+  if(!confirm(`确定删除「${e.title}」？删除后不可恢复。`)) return;
+  const { error } = await state.sb.from('kb_entries').delete().eq('id', e.id);
+  if(error){ toast('删除失败：' + error.message); return; }
+  closeModal('viewModal');
+  toast('已删除');
+  await refresh();
+}
+
+/* ============ 渲染 ============ */
+function render(){
+  renderSeg();
+  renderTagBar();
+  renderList();
+  $('countText').textContent = `共 ${state.counts.all || 0} 条`;
+  // 补全数据
+  $('tagList').innerHTML = state.allTags.map(t => `<option value="${esc(t)}"></option>`).join('');
+  $('jurList').innerHTML = state.allJurisdictions.map(t => `<option value="${esc(t)}"></option>`).join('');
+  $('clearSearch').classList.toggle('hidden', !state.query);
+}
+
+function renderSeg(){
+  const items = [{k:'all', label:'全部', n:state.counts.all || 0}]
+    .concat(CAT_KEYS.map(k => ({k, label:CATS[k].label, n:state.counts[k] || 0})));
+  $('catSeg').innerHTML = items.map(it =>
+    `<button data-cat="${it.k}" class="${state.category===it.k?'on':''}">${esc(it.label)}<span class="n">${it.n}</span></button>`
+  ).join('');
+}
+
+function renderTagBar(){
+  if(!state.allTags.length){ $('tagBar').innerHTML = ''; return; }
+  const chips = state.allTags.slice(0, 40).map(t =>
+    `<button class="chip ${state.tag===t?'on':''}" data-tag="${esc(t)}">${esc(t)}</button>`
+  ).join('');
+  $('tagBar').innerHTML = `<span class="lbl">标签</span>${chips}`;
+}
+
+function renderList(){
+  const box = $('list');
+  if(!state.entries.length){
+    const hasFilter = state.query || state.tag || state.favOnly || state.category !== 'all';
+    box.innerHTML = `<div class="empty">
+      <h3>${hasFilter ? '没有符合条件的条目' : '还没有记录'}</h3>
+      <p>${hasFilter ? '换个关键词，或点上面的「全部」清掉筛选' : '看到好条款、学到新知识，随手存一条，将来用的时候一搜就有'}</p>
+      <button class="btn btn-primary" id="emptyNew">+ 新建第一条</button>
+    </div>`;
+    $('emptyNew').onclick = () => openEditor();
+    return;
+  }
+  box.innerHTML = state.entries.map(cardHtml).join('');
+}
+
+function cardHtml(e){
+  const c = CATS[e.category] || CATS.contract;
+  const tags = (e.tags || []).map(t => `<span class="chip" data-tag="${esc(t)}">${esc(t)}</span>`).join('');
+  const metas = [];
+  if(e.jurisdiction) metas.push(esc(e.jurisdiction));
+  if(e.source) metas.push(esc(e.source));
+  metas.push(`更新 ${iso(e.updated_at)}`);
+  if(e.use_count) metas.push(`用过 ${e.use_count} 次`);
+
+  return `<div class="card" data-id="${e.id}">
+    <div class="card-head">
+      <span class="badge" style="background:${c.bg};color:${c.color}">${c.short}</span>
+      <div class="card-title" data-act="view">${esc(e.title)}</div>
+      <div class="card-meta">
+        <button class="icon-btn ${e.is_favorite?'active':''}" data-act="fav" title="${e.is_favorite?'取消收藏':'收藏'}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="${e.is_favorite?'currentColor':'none'}" stroke="currentColor" stroke-width="2">
+            <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="card-body" data-act="view">${esc(e.body)}</div>
+    <div class="card-foot">
+      <div class="tags">${tags}</div>
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" data-act="copy">复制</button>
+        <button class="btn btn-ghost btn-sm" data-act="edit">编辑</button>
+      </div>
+    </div>
+    <div class="card-foot" style="margin-top:6px;padding-top:0">
+      <span class="mini">${metas.join(' <span class="dot">·</span> ')}</span>
+    </div>
+  </div>`;
+}
+
+/* ============ 详情 ============ */
+function openView(e){
+  state.current = e;
+  const c = CATS[e.category] || CATS.contract;
+  $('vBadge').textContent = c.short;
+  $('vBadge').style.background = c.bg;
+  $('vBadge').style.color = c.color;
+  $('vTitle').textContent = e.title;
+
+  let html = '';
+  if(e.body) html += `<div class="sec"><div class="sec-h">${c.bodyLabel}</div><div class="sec-c body">${esc(e.body)}</div></div>`;
+  if(e.why)  html += `<div class="sec"><div class="sec-h">${c.whyLabel}</div><div class="sec-c why">${esc(e.why)}</div></div>`;
+  if(e.risk) html += `<div class="sec"><div class="sec-h">风险提示</div><div class="sec-c risk">${esc(e.risk)}</div></div>`;
+
+  const facts = [];
+  if(e.jurisdiction) facts.push(`<span class="mini">法域：${esc(e.jurisdiction)}</span>`);
+  if(e.source) facts.push(`<span class="mini">出处：${esc(e.source)}</span>`);
+  facts.push(`<span class="mini">更新：${iso(e.updated_at)}</span>`);
+  if(e.use_count) facts.push(`<span class="mini">用过 ${e.use_count} 次</span>`);
+  html += `<div class="detail-meta">${facts.join('<span class="mini dot">·</span>')}</div>`;
+
+  if((e.tags || []).length){
+    html += `<div class="sec"><div class="sec-h">标签</div><div class="detail-tags">${e.tags.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div></div>`;
+  }
+  $('vBody').innerHTML = html;
+  openModal('viewModal');
+}
+
+/* ============ 编辑 ============ */
+function openEditor(entry){
+  const e = entry || null;
+  state.editingId = e ? e.id : null;
+  $('eHead').textContent = e ? '编辑条目' : '新建条目';
+  $('eErr').textContent = '';
+
+  $('eCategory').innerHTML = CAT_KEYS.map(k => `<option value="${k}">${CATS[k].label}</option>`).join('');
+
+  const cat = e ? e.category : 'contract';
+  $('eCategory').value = cat;
+  $('eTitle').value = e ? e.title : '';
+  $('eBody').value = e ? e.body : '';
+  $('eWhy').value = e ? e.why : '';
+  $('eRisk').value = e ? e.risk : '';
+  $('eSource').value = e ? e.source : '';
+  $('eJurisdiction').value = e ? e.jurisdiction : '';
+  $('eTags').value = e ? (e.tags || []).join(', ') : '';
+  $('eFav').checked = e ? !!e.is_favorite : false;
+
+  applyCatLabels(cat);
+  openModal('editModal');
+  setTimeout(() => $('eTitle').focus(), 30);
+}
+
+function applyCatLabels(cat){
+  const c = CATS[cat] || CATS.contract;
+  $('eBodyLabel').textContent = c.bodyLabel;
+  $('eBody').placeholder = c.bodyPh;
+  $('eWhyLabel').textContent = c.whyLabel;
+  $('eWhy').placeholder = c.whyPh;
+}
+
+async function saveEntry(){
+  const title = $('eTitle').value.trim();
+  const body = $('eBody').value.trim();
+  if(!title){ $('eErr').textContent = '标题不能为空'; $('eTitle').focus(); return; }
+  if(!body){ $('eErr').textContent = '正文不能为空'; $('eBody').focus(); return; }
+
+  const tags = $('eTags').value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+  const payload = {
+    category: $('eCategory').value,
+    title,
+    body,
+    why: $('eWhy').value.trim(),
+    risk: $('eRisk').value.trim(),
+    source: $('eSource').value.trim(),
+    jurisdiction: $('eJurisdiction').value.trim(),
+    tags,
+    is_favorite: $('eFav').checked,
+  };
+
+  $('eSave').disabled = true;
+  let error;
+  if(state.editingId){
+    ({ error } = await state.sb.from('kb_entries').update(payload).eq('id', state.editingId));
+  }else{
+    ({ error } = await state.sb.from('kb_entries').insert(payload));
+  }
+  $('eSave').disabled = false;
+
+  if(error){ $('eErr').textContent = '保存失败：' + error.message; return; }
+  closeModal('editModal');
+  toast(state.editingId ? '已保存' : '已添加');
+  state.query = ''; $('search').value = '';
+  state.category = 'all'; state.tag = null; state.favOnly = false;
+  $('favTgl').classList.remove('on');
+  await refresh();
+}
+
+/* ============ 复制 ============ */
+async function copyText(text, entry){
+  try{
+    await navigator.clipboard.writeText(text);
+    toast(entry ? '正文已复制，计数 +1' : '已复制');
+    if(entry) await bumpUse(entry.id);
+  }catch{
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast('已复制');
+    if(entry) await bumpUse(entry.id);
+  }
+}
+
+/* ============ 导入导出 ============ */
+async function fetchAll(){
+  const { data, error } = await state.sb.from('kb_entries').select('*').order('updated_at', {ascending:false});
+  if(error) throw error;
+  return data || [];
+}
+
+function toMarkdown(rows){
+  const head = `# 法务知识库导出\n\n导出时间：${new Date().toISOString()}\n共 ${rows.length} 条\n`;
+  const body = rows.map(e => {
+    const c = CATS[e.category] || CATS.contract;
+    let s = `\n---\n\n## [${c.short}] ${e.title}\n\n`;
+    s += `**${c.bodyLabel}**\n\n${e.body}\n\n`;
+    if(e.why)  s += `**${c.whyLabel}**：${e.why}\n\n`;
+    if(e.risk) s += `**风险提示**：${e.risk}\n\n`;
+    const m = [];
+    if(e.jurisdiction) m.push(`法域：${e.jurisdiction}`);
+    if(e.source) m.push(`出处：${e.source}`);
+    if((e.tags||[]).length) m.push(`标签：${e.tags.join(' / ')}`);
+    m.push(`更新：${iso(e.updated_at)}`);
+    s += `*${m.join(' · ')}*\n`;
+    return s;
+  }).join('');
+  return head + body;
+}
+
+function download(name, text, type){
+  const blob = new Blob([text], { type: type || 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* ============ 事件 ============ */
+$('setupForm').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const url = $('cfgUrl').value.trim();
+  const key = $('cfgKey').value.trim();
+  if(!url || !key){ $('setupErr').textContent = '两项都要填'; return; }
+  if(keyLooksPrivileged(key)){
+    $('setupErr').textContent = '这是 service_role / secret 密钥，权限过大，别用。请改填 Publishable key（新版）或 anon public（老版）。';
+    return;
+  }
+
+  $('btnConnect').disabled = true;
+  $('btnConnect').textContent = '连接中…';
+  $('setupErr').textContent = '';
+  try{
+    buildClient(url, key);
+    const err = await testConnection();
+    if(err){
+      const m = String(err.message || '');
+      // 注意顺序：permission denied 的文案里也可能带 function 字样，必须先判权限
+      if(err.code === '42501' || m.includes('permission denied')){
+        $('setupErr').textContent = '连上了，但数据库拒绝访问。新版 Supabase 要显式授权，请重新执行一次 setup.sql（脚本第 7 节的 GRANT 就是干这个的）。';
+      }else if(err.code === 'PGRST202' || m.includes('Could not find the function')){
+        $('setupErr').textContent = '连上了，但没找到 kb_search 函数。请先执行 setup.sql 再回来。';
+      }else if(err.code === '42P01' || m.includes('relation')){
+        $('setupErr').textContent = '连上了，但表 kb_entries 不存在。请先执行 setup.sql 再回来。';
+      }else{
+        $('setupErr').textContent = '连接失败：' + m;
+      }
+      return;
+    }
+    localStorage.setItem(LS_URL, url);
+    localStorage.setItem(LS_KEY, key);
+    enterApp();
+  }catch(ex){
+    $('setupErr').textContent = '连接失败：' + (ex.message || '请检查 URL 和密钥');
+  }finally{
+    $('btnConnect').disabled = false;
+    $('btnConnect').textContent = '连接并进入';
+  }
+});
+
+async function enterApp(){
+  $('setupScreen').classList.add('hidden');
+  $('appScreen').classList.remove('hidden');
+  $('connInfo').textContent = `已连接：${localStorage.getItem(LS_URL)}`;
+  await refresh();
+}
+
+$('btnNew').onclick = () => openEditor();
+$('btnHelp').onclick = () => openModal('helpModal');
+$('btnData').onclick = () => openModal('dataModal');
+
+$('search').addEventListener('input', debounce(ev => {
+  state.query = ev.target.value.trim();
+  refresh();
+}, 260));
+
+$('clearSearch').onclick = () => { $('search').value = ''; state.query = ''; refresh(); };
+
+$('catSeg').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-cat]');
+  if(!b) return;
+  state.category = b.dataset.cat;
+  refresh();
+});
+
+$('tagBar').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-tag]');
+  if(!b) return;
+  const t = b.dataset.tag;
+  state.tag = (state.tag === t) ? null : t;
+  refresh();
+});
+
+$('list').addEventListener('click', ev => {
+  const tagChip = ev.target.closest('.tags [data-tag]');
+  if(tagChip){ state.tag = tagChip.dataset.tag; refresh(); return; }
+
+  const card = ev.target.closest('.card');
+  if(!card) return;
+  const e = state.entries.find(x => x.id === Number(card.dataset.id));
+  if(!e) return;
+
+  const act = ev.target.closest('[data-act]');
+  const action = act ? act.dataset.act : null;
+  if(action === 'copy'){ copyText(e.body, e); return; }
+  if(action === 'edit'){ openEditor(e); return; }
+  if(action === 'fav'){ toggleFav(e); return; }
+  if(action === 'view' || !action){ openView(e); return; }
+});
+
+$('favTgl').onclick = () => {
+  state.favOnly = !state.favOnly;
+  $('favTgl').classList.toggle('on', state.favOnly);
+  refresh();
+};
+
+$('sortSel').onchange = ev => { state.sort = ev.target.value; refresh(); };
+
+$('eCategory').onchange = ev => applyCatLabels(ev.target.value);
+$('eSave').onclick = saveEntry;
+
+$('vCopy').onclick = () => { if(state.current) copyText(state.current.body, state.current); };
+$('vEdit').onclick = () => { const e = state.current; closeModal('viewModal'); openEditor(e); };
+$('vDel').onclick = () => { if(state.current) removeEntry(state.current); };
+
+document.addEventListener('click', ev => {
+  const c = ev.target.closest('[data-close]');
+  if(c) closeModal(c.dataset.close);
+  if(ev.target.classList.contains('backdrop')) ev.target.classList.add('hidden');
+});
+
+$('btnExportJson').onclick = async () => {
+  const rows = await fetchAll();
+  download(`法务知识库-${iso(new Date())}.json`, JSON.stringify(rows, null, 2), 'application/json');
+  toast('已导出 JSON');
+};
+$('btnExportMd').onclick = async () => {
+  const rows = await fetchAll();
+  download(`法务知识库-${iso(new Date())}.md`, toMarkdown(rows), 'text/markdown');
+  toast('已导出 Markdown');
+};
+$('btnCopyMd').onclick = async () => {
+  const rows = await fetchAll();
+  await copyText(toMarkdown(rows));
+};
+$('btnImport').onclick = async () => {
+  const f = $('importFile').files[0];
+  if(!f){ $('importErr').textContent = '先选一个 JSON 文件'; return; }
+  $('importErr').textContent = '';
+  try{
+    const rows = JSON.parse(await f.text());
+    if(!Array.isArray(rows)) throw new Error('格式不对，应该是数组');
+    const clean = rows.map(({ id, created_at, updated_at, ...rest }) => rest);
+    const { error } = await state.sb.from('kb_entries').insert(clean);
+    if(error) throw error;
+    toast(`已导入 ${clean.length} 条`);
+    closeModal('dataModal');
+    await refresh();
+  }catch(ex){
+    $('importErr').textContent = '导入失败：' + ex.message;
+  }
+};
+$('btnReconfig').onclick = () => {
+  localStorage.removeItem(LS_URL);
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+};
+
+document.addEventListener('keydown', ev => {
+  if((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'k'){ ev.preventDefault(); $('search').focus(); $('search').select(); }
+  if((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'n'){ ev.preventDefault(); openEditor(); }
+  if(ev.key === 'Escape'){
+    ['viewModal','editModal','dataModal','helpModal'].forEach(closeModal);
+    if(document.activeElement === $('search')){ $('search').value=''; state.query=''; refresh(); }
+  }
+});
+
+/* ============ 启动 ============ */
+(function boot(){
+  const url = localStorage.getItem(LS_URL);
+  const key = localStorage.getItem(LS_KEY);
+  if(url && key){
+    $('cfgUrl').value = url;
+    $('cfgKey').value = key;
+    try{
+      buildClient(url, key);
+      enterApp();
+    }catch(ex){
+      $('setupErr').textContent = ex.message;
+    }
+  }
+})();
+</script>
+</body>
+</html>
