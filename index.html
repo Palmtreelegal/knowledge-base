@@ -958,8 +958,8 @@ document.addEventListener('click', ev => {
     else closeModal(c.dataset.close);
   }
   if(ev.target.classList.contains('backdrop')){
-    if(ev.target.id === 'editModal') closeEditor();
-    else ev.target.classList.add('hidden');
+    // 编辑框不允许点遮罩关闭（防手抖/全选时拖出去误关），只能用 取消/关闭 按钮
+    if(ev.target.id !== 'editModal') ev.target.classList.add('hidden');
   }
 });
 
@@ -1004,7 +1004,8 @@ document.addEventListener('keydown', ev => {
   if((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'k'){ ev.preventDefault(); $('search').focus(); $('search').select(); }
   if((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'n'){ ev.preventDefault(); openEditor(); }
   if(ev.key === 'Escape'){
-    if(!$('editModal').classList.contains('hidden')){ closeEditor(); return; }
+    // 编辑框不允许 Esc 关闭（防手抖），只能用 取消/关闭 按钮
+    if(!$('editModal').classList.contains('hidden')) return;
     ['viewModal','dataModal','helpModal'].forEach(closeModal);
     if(document.activeElement === $('search')){ $('search').value=''; state.query=''; refresh(); }
   }
