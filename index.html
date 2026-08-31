@@ -677,8 +677,17 @@ function openEditor(entry){
   $('eTags').value = e ? (e.tags || []).join(', ') : '';
   $('eFav').checked = e ? !!e.is_favorite : false;
 
-  applyCatLabels(cat);
+  // 草稿恢复：新建读全局草稿，编辑读该条目专属草稿
+  const d = readDraft(state.editingId ? `kb_draft_e${state.editingId}` : 'kb_draft');
+  let restored = false;
+  if(d){
+    fillDraft(d);
+    restored = true;
+  }
+
+  applyCatLabels($('eCategory').value);
   openModal('editModal');
+  if(restored) toast(e ? '已恢复上次未保存的修改' : '已恢复未保存的草稿');
   setTimeout(() => $('eTitle').focus(), 30);
 }
 
@@ -688,6 +697,62 @@ function applyCatLabels(cat){
   $('eBody').placeholder = c.bodyPh;
   $('eWhyLabel').textContent = c.whyLabel;
   $('eWhy').placeholder = c.whyPh;
+}
+
+/* ============ 草稿保护：手抖关闭不丢内容 ============ */
+function draftKey(){ return state.editingId ? `kb_draft_e${state.editingId}` : 'kb_draft'; }
+
+function readDraft(k){
+  try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch{ return null; }
+}
+
+function fillDraft(d){
+  if(d.category && CATS[d.category]) $('eCategory').value = d.category;
+  $('eTitle').value = d.title || '';
+  $('eBody').value = d.body || '';
+  $('eWhy').value = d.why || '';
+  $('eRisk').value = d.risk || '';
+  $('eSource').value = d.source || '';
+  $('eJurisdiction').value = d.jurisdiction || '';
+  $('eTags').value = d.tags || '';
+  $('eFav').checked = !!d.fav;
+}
+
+function collectDraft(){
+  return {
+    category: $('eCategory').value,
+    title: $('eTitle').value,
+    body: $('eBody').value,
+    why: $('eWhy').value,
+    risk: $('eRisk').value,
+    source: $('eSource').value,
+    jurisdiction: $('eJurisdiction').value,
+    tags: $('eTags').value,
+    fav: $('eFav').checked,
+  };
+}
+
+function draftHasContent(d){
+  return ['title','body','why','risk','source','jurisdiction','tags'].some(k => (d[k] || '').trim());
+}
+
+function saveDraft(){
+  if($('editModal').classList.contains('hidden')) return;
+  const d = collectDraft();
+  const k = draftKey();
+  if(draftHasContent(d)) localStorage.setItem(k, JSON.stringify(d));
+  else localStorage.removeItem(k);
+}
+
+function clearDraft(){
+  localStorage.removeItem(draftKey());
+}
+
+function closeEditor(){
+  const had = draftHasContent(collectDraft());
+  saveDraft();
+  closeModal('editModal');
+  if(had) toast('已关闭，内容已存为草稿，下次打开自动恢复');
 }
 
 async function saveEntry(){
@@ -719,6 +784,7 @@ async function saveEntry(){
   $('eSave').disabled = false;
 
   if(error){ $('eErr').textContent = '保存失败：' + error.message; return; }
+  clearDraft();
   closeModal('editModal');
   toast(state.editingId ? '已保存' : '已添加');
   state.query = ''; $('search').value = '';
@@ -887,8 +953,14 @@ $('vDel').onclick = () => { if(state.current) removeEntry(state.current); };
 
 document.addEventListener('click', ev => {
   const c = ev.target.closest('[data-close]');
-  if(c) closeModal(c.dataset.close);
-  if(ev.target.classList.contains('backdrop')) ev.target.classList.add('hidden');
+  if(c){
+    if(c.dataset.close === 'editModal') closeEditor();
+    else closeModal(c.dataset.close);
+  }
+  if(ev.target.classList.contains('backdrop')){
+    if(ev.target.id === 'editModal') closeEditor();
+    else ev.target.classList.add('hidden');
+  }
 });
 
 $('btnExportJson').onclick = async () => {
@@ -932,9 +1004,15 @@ document.addEventListener('keydown', ev => {
   if((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'k'){ ev.preventDefault(); $('search').focus(); $('search').select(); }
   if((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'n'){ ev.preventDefault(); openEditor(); }
   if(ev.key === 'Escape'){
-    ['viewModal','editModal','dataModal','helpModal'].forEach(closeModal);
+    if(!$('editModal').classList.contains('hidden')){ closeEditor(); return; }
+    ['viewModal','dataModal','helpModal'].forEach(closeModal);
     if(document.activeElement === $('search')){ $('search').value=''; state.query=''; refresh(); }
   }
+});
+
+/* 草稿自动保存：编辑弹窗内任何输入实时落草稿 */
+['eCategory','eTitle','eBody','eWhy','eRisk','eSource','eJurisdiction','eTags','eFav'].forEach(id => {
+  ['input','change'].forEach(evt => $(id).addEventListener(evt, saveDraft));
 });
 
 /* ============ 启动 ============ */
