@@ -1017,7 +1017,7 @@ document.addEventListener('keydown', ev => {
 });
 
 /* ============ 启动 ============ */
-(function boot(){
+(async function boot(){
   const url = localStorage.getItem(LS_URL);
   const key = localStorage.getItem(LS_KEY);
   if(url && key){
@@ -1025,9 +1025,30 @@ document.addEventListener('keydown', ev => {
     $('cfgKey').value = key;
     try{
       buildClient(url, key);
+      const err = await testConnection();
+      if(err){
+        // 自动存配置无效/过期，清掉并回配置页
+        localStorage.removeItem(LS_URL);
+        localStorage.removeItem(LS_KEY);
+        state.sb = null;
+        $('cfgUrl').value = url;
+        $('cfgKey').value = '';
+        const m = String(err.message || '');
+        if(err.code === '42501' || m.includes('permission denied')){
+          $('setupErr').textContent = '自动连接失败：数据库拒绝访问。新版 Supabase 要显式授权，请重新执行 setup.sql。';
+        }else if(m.includes('No API key') || err.code === '401'){
+          $('setupErr').textContent = '本地密钥失效或丢失，已清空。请从 Supabase Connect 重新复制 Publishable key 填入。';
+        }else{
+          $('setupErr').textContent = '自动连接失败：' + m + '。已清空本地配置，请重填。';
+        }
+        return;
+      }
       enterApp();
     }catch(ex){
-      $('setupErr').textContent = ex.message;
+      localStorage.removeItem(LS_URL);
+      localStorage.removeItem(LS_KEY);
+      $('cfgKey').value = '';
+      $('setupErr').textContent = '自动连接失败：' + (ex.message || '请检查 URL 和密钥');
     }
   }
 })();
