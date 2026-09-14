@@ -204,6 +204,16 @@ select.sort{padding:8px 10px;border:1px solid var(--line);border-radius:8px;back
 
 <!-- ============ 主界面 ============ -->
 <div id="appScreen" class="app hidden">
+  <div id="connBanner" class="hidden" style="background:#fff4e5;border-bottom:1px solid #f0c98a;color:#7a4b00;padding:10px 16px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;font-size:13px">
+    <div style="flex:1;min-width:240px">
+      <b>暂时读不到数据库</b>
+      <div id="connBannerMsg" style="margin-top:4px;line-height:1.6"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button class="btn btn-ghost btn-sm" id="btnRetryConn">重试</button>
+      <button class="btn btn-ghost btn-sm" id="btnBannerReconfig">重新配置</button>
+    </div>
+  </div>
   <header class="top">
     <div class="top-row">
       <div class="logo">T</div>
@@ -508,6 +518,7 @@ async function refresh(){
     p_sort: state.sort,
   });
   if(error){ toast('读取失败：' + error.message); return; }
+  if(typeof hideConnBanner === 'function') hideConnBanner();
   state.entries = data || [];
 
   // 全量取一次用于统计与标签补全
@@ -1016,40 +1027,92 @@ document.addEventListener('keydown', ev => {
   ['input','change'].forEach(evt => $(id).addEventListener(evt, saveDraft));
 });
 
+/* 把连接错误分类：只有密钥真的失效才清配置，网络抖动/项目休眠一律保留 */
+function errKind(err, ex){
+  const m = String((err && err.message) || (ex && ex.message) || '');
+  const code = err && err.code;
+  if(code === '42501' || m.includes('permission denied')) return 'perm';
+  if(code === 'PGRST202' || m.includes('Could not find the function')) return 'nofunc';
+  if(code === '401' || code === 'PGRST301' || m.includes('No API key') || m.includes('JWT') || m.includes('invalid API key')) return 'auth';
+  if(m.includes('Failed to fetch') || m.includes('NetworkError') || m.includes('timeout') || m.includes('数据库组件') || (ex instanceof TypeError)) return 'net';
+  return 'other';
+}
+
+function showConnBanner(msg){
+  $('connBannerMsg').innerHTML =
+    '错误信息：' + (msg || '未知') +
+    '<br>常见原因：① Supabase 免费项目闲置约 7 天会自动暂停，去控制台点 Restore 恢复即可；② 当前网络访问不到 Supabase。' +
+    '<br><b>你的配置（URL 和密钥）已完整保留</b>，问题解决后点右侧「重试」就能继续，不用重填。';
+  $('connBanner').classList.remove('hidden');
+}
+function hideConnBanner(){ $('connBanner').classList.add('hidden'); }
+
+$('btnRetryConn').onclick = async () => {
+  const url = localStorage.getItem(LS_URL), key = localStorage.getItem(LS_KEY);
+  if(!url || !key){ toast('本地没有配置，请点「重新配置」'); return; }
+  $('btnRetryConn').disabled = true;
+  $('btnRetryConn').textContent = '重试中…';
+  try{
+    buildClient(url, key);
+    const err = await testConnection();
+    $('btnRetryConn').disabled = false;
+    $('btnRetryConn').textContent = '重试';
+    if(err){ showConnBanner(err.message); return; }
+    hideConnBanner();
+    await refresh();
+    toast('已重新连上');
+  }catch(ex){
+    $('btnRetryConn').disabled = false;
+    $('btnRetryConn').textContent = '重试';
+    showConnBanner(ex.message || String(ex));
+  }
+};
+
+$('btnBannerReconfig').onclick = () => {
+  $('appScreen').classList.add('hidden');
+  $('setupScreen').classList.remove('hidden');
+  hideConnBanner();
+  $('cfgUrl').value = localStorage.getItem(LS_URL) || '';
+  $('cfgKey').value = localStorage.getItem(LS_KEY) || '';
+  $('setupErr').textContent = '';
+};
+
 /* ============ 启动 ============ */
 (async function boot(){
   const url = localStorage.getItem(LS_URL);
   const key = localStorage.getItem(LS_KEY);
-  if(url && key){
-    $('cfgUrl').value = url;
-    $('cfgKey').value = key;
-    try{
-      buildClient(url, key);
-      const err = await testConnection();
-      if(err){
-        // 自动存配置无效/过期，清掉并回配置页
-        localStorage.removeItem(LS_URL);
-        localStorage.removeItem(LS_KEY);
-        state.sb = null;
-        $('cfgUrl').value = url;
-        $('cfgKey').value = '';
-        const m = String(err.message || '');
-        if(err.code === '42501' || m.includes('permission denied')){
-          $('setupErr').textContent = '自动连接失败：数据库拒绝访问。新版 Supabase 要显式授权，请重新执行 setup.sql。';
-        }else if(m.includes('No API key') || err.code === '401'){
-          $('setupErr').textContent = '本地密钥失效或丢失，已清空。请从 Supabase Connect 重新复制 Publishable key 填入。';
-        }else{
-          $('setupErr').textContent = '自动连接失败：' + m + '。已清空本地配置，请重填。';
-        }
-        return;
-      }
-      enterApp();
-    }catch(ex){
-      localStorage.removeItem(LS_URL);
-      localStorage.removeItem(LS_KEY);
+  if(!url || !key) return;
+  $('cfgUrl').value = url;
+  try{
+    buildClient(url, key);
+    const err = await testConnection();
+    if(!err){ enterApp(); return; }
+    const kind = errKind(err, null);
+    if(kind === 'auth'){
+      localStorage.removeItem(LS_KEY);   // 只清密钥，URL 保留
+      state.sb = null;
       $('cfgKey').value = '';
-      $('setupErr').textContent = '自动连接失败：' + (ex.message || '请检查 URL 和密钥');
+      $('setupErr').textContent = '本地保存的密钥已失效，已清空。请到 Supabase 项目右上角 Connect 重新复制 Publishable key 粘进来（URL 已帮你留着）。';
+      return;
     }
+    if(kind === 'perm'){
+      $('setupErr').textContent = '连上了，但数据库拒绝访问。请重新执行一次 setup.sql（第 7 节 GRANT 语句）。';
+      return;
+    }
+    if(kind === 'nofunc'){
+      $('setupErr').textContent = '连上了，但 kb_search 函数不存在。请重新执行一次 setup.sql。';
+      return;
+    }
+    // 网络不通 / 项目休眠：配置保留，进主界面并显示可重试的横幅
+    showConnBanner(err.message);
+    enterApp();
+  }catch(ex){
+    if(!state.sb){
+      $('setupErr').textContent = '启动失败：' + (ex.message || '请检查 URL 和密钥');
+      return;
+    }
+    showConnBanner(ex.message || String(ex));
+    enterApp();
   }
 })();
 </script>
